@@ -15,7 +15,34 @@ const CreatePost = () => {
 
   const [generatingImg, setGeneratingImg] = useState(false);
   const [loading, setLoading] = useState(false);
-  const handleSubmit = () => {};
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (form.prompt && form.photo) {
+      setLoading(true);
+
+      try {
+        const response = await fetch("http://localhost:8080/api/v1/post", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        });
+
+        await response.json();
+        navigate("/");
+      } catch (e) {
+        alert(e);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      alert("Please enter a prompt and generate an Image");
+    }
+  };
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -28,6 +55,7 @@ const CreatePost = () => {
     if (form.prompt) {
       try {
         setGeneratingImg(true);
+        // alert(form.prompt);
         const response = await fetch("http://localhost:8080/api/v1/dalle", {
           method: "POST",
           headers: {
@@ -37,10 +65,12 @@ const CreatePost = () => {
         });
 
         const data = await response.json();
+        // alert(data);
 
         setForm({ ...form, photo: `data:image/jpeg;base64,${data.photo}` });
       } catch (error) {
         alert(error);
+        
       } finally {
         setGeneratingImg(false);
       }
@@ -90,7 +120,7 @@ const CreatePost = () => {
                 src={preview}
                 alt="preview"
                 className="w-9/12 h-9/12 object-contain opacity-40"
-              />
+              />  
             )}
 
             {generatingImg && (
@@ -118,7 +148,7 @@ const CreatePost = () => {
             type="submit"
             className="mt-3 text-white bg-[#6469ff] font-medium rounded-md text-sm w-full sm:w-auto px-5 py-2.5 text-center "
           >
-            Share in community
+            {loading ? 'Sharing...' : 'Share with the Community'}
           </button>
         </div>
       </form>
